@@ -1,0 +1,100 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "ti,beaglebone", "ti,beaglebone-black";
+    part-number = "BBB-I2C-ALL";
+    version = "00A0";
+    fragment@0 
+    {
+        target = <&am33xx_pinmux>;
+        __overlay__ 
+        {
+            /* I2C1 Pins: P9.17 (scl), P9.18 (sda) */
+            i2c1_pins: pinmux_i2c1_pins 
+            {
+                pinctrl-single,pins = <
+                    0x158 0x72  /* P9.18: spi0_d1.i2c1_sda, SLEWCTRL_SLOW | INPUT_PULLUP | MODE2 */
+                    0x15C 0x72  /* P9.17: spi0_cs0.i2c1_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE2 */
+                >;
+            };
+
+            /* I2C2 Pins: P9.19 (scl), P9.20 (sda) */
+            i2c2_pins: pinmux_i2c2_pins 
+            {
+                pinctrl-single,pins = <
+                    0x17C 0x73  /* P9.19: uart1_rtsn.i2c2_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
+                    0x178 0x73  /* P9.20: uart1_ctsn.i2c2_sda, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
+                >;
+            };
+        };
+    };
+    fragment@1 
+    {
+        target = <&i2c1>;
+        __overlay__ 
+        {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <&i2c1_pins>;
+            clock-frequency = <100000>; /* 100 kHz standard mode */
+            /* Example I2C devices - uncomment and modify as needed */
+            /*
+            // TMP101 temperature sensor at address 0x48
+            tmp101@48 
+            {
+                compatible = "ti,tmp101";
+                reg = <0x48>;
+            };
+            // EEPROM at address 0x50
+            eeprom@50 
+            {
+                compatible = "atmel,24c256";
+                reg = <0x50>;
+                pagesize = <64>;
+            };
+            // I2C GPIO expander
+            pcf8574@20 
+            {
+                compatible = "nxp,pcf8574";
+                reg = <0x20>;
+                gpio-controller;
+                #gpio-cells = <2>;
+            };
+            */
+        };
+    };
+    fragment@2 
+    {
+        target = <&i2c2>;
+        __overlay__ 
+        {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <&i2c2_pins>;
+            clock-frequency = <100000>; /* 100 kHz standard mode */
+        };
+    };
+    fragment@3 
+    {
+        target-path="/";
+        __overlay__ 
+        {
+            /* External I2C devices can be defined here */
+            i2c_devices 
+            {
+                compatible = "bbb-i2c-devices";
+                status = "okay";
+                /*
+                my_i2c_sensor@1c 
+                {
+                    compatible = "custom,i2c-sensor";
+                    reg = <0x1c>;
+                    interrupt-parent = <&gpio1>;
+                    interrupts = <12 1>; /* GPIO1_12, falling edge */
+                };
+                */
+            };
+        };
+    };
+};
